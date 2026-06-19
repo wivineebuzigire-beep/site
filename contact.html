@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entre Nous | Contact</title>
+  <meta name="description" content="Page de contact pour partager un message autour de l'amitie." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-bg" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">Entre Nous</a>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <a class="site-nav__link" href="index.html">Accueil</a>
+      <a class="site-nav__link" href="a-propos.html">A propos</a>
+      <a class="site-nav__link" href="souvenirs.html">Souvenirs</a>
+      <a class="site-nav__link active" href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <h1>Restons en contact</h1>
+      <p>Tu peux laisser un message pour partager une anecdote, un souvenir ou juste un mot sympa.</p>
+    </section>
+
+    <section class="section">
+      <form class="contact-form" action="#" method="post">
+        <label for="name">Nom</label>
+        <input id="name" name="name" type="text" placeholder="Ton nom" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="ton@email.com" required />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="6" placeholder="Ecris ton message..." required></textarea>
+
+        <button class="cta" type="submit">Envoyer</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Entre Nous - Contact</p>
+  </footer>
+</body>
+</html>

@@ -280,6 +280,43 @@ blockquote {
   padding: 1rem;
 }
 
+.contact-note {
+  margin-bottom: 1rem;
+}
+
+.contact-note a {
+  color: var(--ocean);
+  font-weight: 700;
+}
+
+.form-status {
+  margin: 0.75rem 0 0;
+  font-weight: 700;
+}
+
+.publication-grid,
+.publication-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.publication-label {
+  margin: 0 0 0.45rem;
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(239, 111, 108, 0.14);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.publication h3 {
+  margin-bottom: 0.55rem;
+}
+
 .contact-form label {
   font-weight: 700;
 }
@@ -353,5 +390,15 @@ blockquote {
 
   .cards--two {
     grid-template-columns: 1fr;
+  }
+
+  .publication-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 901px) {
+  .publication-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

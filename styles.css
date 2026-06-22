@@ -317,24 +317,6 @@ blockquote {
   box-shadow: none;
 }
 
-.retry-btn {
-  margin-top: 0.65rem;
-  border: 1px solid rgba(47, 111, 143, 0.35);
-  background: rgba(47, 111, 143, 0.1);
-  color: var(--ink);
-  border-radius: 12px;
-  padding: 0.58rem 0.9rem;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.retry-btn:hover,
-.retry-btn:focus-visible {
-  background: rgba(47, 111, 143, 0.18);
-  outline: none;
-}
-
 .publication-grid,
 .publication-list {
   display: grid;

@@ -289,9 +289,50 @@ blockquote {
   font-weight: 700;
 }
 
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .form-status {
   margin: 0.75rem 0 0;
   font-weight: 700;
+}
+
+.form-status--ok {
+  color: #1f7a3d;
+}
+
+.form-status--error {
+  color: #a72a2a;
+}
+
+.contact-form .cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.retry-btn {
+  margin-top: 0.65rem;
+  border: 1px solid rgba(47, 111, 143, 0.35);
+  background: rgba(47, 111, 143, 0.1);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 0.58rem 0.9rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retry-btn:hover,
+.retry-btn:focus-visible {
+  background: rgba(47, 111, 143, 0.18);
+  outline: none;
 }
 
 .publication-grid,

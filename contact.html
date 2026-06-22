@@ -39,6 +39,10 @@
 
     <section class="section">
       <form class="contact-form" id="contact-form" action="/api/contact" method="post">
+        <input id="form-started-at" name="formStartedAt" type="hidden" value="" />
+        <label for="website" class="hp-field" aria-hidden="true">Ne pas remplir</label>
+        <input id="website" name="website" type="text" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
         <label for="name">Nom</label>
         <input id="name" name="name" type="text" placeholder="Ton nom" required />
 
@@ -51,6 +55,7 @@
         <button class="cta" type="submit">Envoyer</button>
       </form>
       <p class="form-status" id="form-status" aria-live="polite"></p>
+      <button class="retry-btn" id="retry-connection" type="button">Réessayer la connexion</button>
     </section>
   </main>
 
@@ -60,10 +65,66 @@
   <script>
     const form = document.getElementById('contact-form');
     const status = document.getElementById('form-status');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const retryButton = document.getElementById('retry-connection');
+    const formStartedAtField = document.getElementById('form-started-at');
+
+    function markFormStartTime() {
+      formStartedAtField.value = String(Date.now());
+    }
+
+    markFormStartTime();
+
+    async function checkBackendAvailability() {
+      status.classList.remove('form-status--ok', 'form-status--error');
+      status.textContent = 'Vérification du serveur...';
+      submitButton.disabled = true;
+
+      try {
+        const response = await fetch('/api/health', {
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+
+        if (!response.ok || !contentType.includes('application/json')) {
+          throw new Error('Réponse de santé invalide');
+        }
+
+        const result = await response.json();
+
+        if (!result.ok) {
+          throw new Error('Le serveur n\'est pas prêt');
+        }
+
+        if (!result.configured) {
+          throw new Error('Le serveur est actif, mais Gmail n\'est pas configuré. Vérifiez le fichier .env.');
+        }
+
+        status.textContent = 'Serveur prêt. Vous pouvez envoyer votre message.';
+        status.classList.add('form-status--ok');
+        submitButton.disabled = false;
+      } catch (error) {
+        status.textContent = 'Serveur indisponible. Lancez le backend Node (npm start) puis rechargez la page.';
+        status.classList.add('form-status--error');
+        submitButton.disabled = true;
+      }
+    }
+
+    checkBackendAvailability();
+    retryButton.addEventListener('click', checkBackendAvailability);
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (submitButton.disabled) {
+        return;
+      }
+
+      status.classList.remove('form-status--ok', 'form-status--error');
       status.textContent = 'Envoi en cours...';
+      submitButton.disabled = true;
 
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
@@ -73,20 +134,38 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify(payload),
         });
 
-        const result = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let result = null;
+
+        if (contentType.includes('application/json')) {
+          result = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(
+            text.trim().startsWith('<')
+              ? 'Le serveur a répondu en HTML au lieu de JSON. Vérifiez que le backend Node est lancé et que la route /api/contact est accessible.'
+              : 'Réponse serveur inattendue. Vérifiez la configuration du formulaire.'
+          );
+        }
 
         if (!response.ok) {
           throw new Error(result.message || 'Une erreur est survenue.');
         }
 
         status.textContent = result.message;
+        status.classList.add('form-status--ok');
         form.reset();
+        markFormStartTime();
       } catch (error) {
         status.textContent = error.message;
+        status.classList.add('form-status--error');
+      } finally {
+        submitButton.disabled = false;
       }
     });
   </script>

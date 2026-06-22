@@ -13,6 +13,10 @@ const port = process.env.PORT || 3000;
 const contactTo = process.env.CONTACT_TO || 'gantibusiness@gmail.com';
 const gmailUser = process.env.GMAIL_USER;
 const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+const rateWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000);
+const maxRequestsPerWindow = Number(process.env.RATE_LIMIT_MAX || 5);
+const minSubmitDelayMs = Number(process.env.MIN_SUBMIT_DELAY_MS || 3000);
+const rateLimitStore = new Map();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -32,13 +36,85 @@ function createTransport() {
   });
 }
 
+function getClientIp(req) {
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+    return forwardedFor.split(',')[0].trim();
+  }
+
+  return req.ip || 'unknown';
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const existing = rateLimitStore.get(ip);
+
+  if (!existing || now > existing.resetAt) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + rateWindowMs });
+    return false;
+  }
+
+  existing.count += 1;
+  return existing.count > maxRequestsPerWindow;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+app.get('/api/health', (req, res) => {
+  const isConfigured = Boolean(gmailUser && gmailAppPassword);
+  return res.json({
+    ok: true,
+    configured: isConfigured,
+    antiSpam: {
+      enabled: true,
+      rateWindowMs,
+      maxRequestsPerWindow,
+      minSubmitDelayMs,
+    },
+  });
+});
+
 app.post('/api/contact', async (req, res) => {
   const name = String(req.body.name || '').trim();
   const email = String(req.body.email || '').trim();
   const message = String(req.body.message || '').trim();
+  const website = String(req.body.website || '').trim();
+  const formStartedAt = Number(req.body.formStartedAt || 0);
+  const clientIp = getClientIp(req);
+
+  if (website.length > 0) {
+    return res.json({ ok: true, message: 'Votre message a bien été envoyé à Ganti Busime.' });
+  }
+
+  if (!Number.isFinite(formStartedAt) || Date.now() - formStartedAt < minSubmitDelayMs) {
+    return res.status(429).json({
+      ok: false,
+      message: 'Envoi trop rapide. Veuillez patienter quelques secondes puis réessayer.',
+    });
+  }
+
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({
+      ok: false,
+      message: 'Trop de tentatives. Merci de réessayer plus tard.',
+    });
+  }
 
   if (!name || !email || !message) {
     return res.status(400).json({ ok: false, message: 'Tous les champs sont obligatoires.' });
+  }
+
+  if (name.length > 120 || message.length > 3000) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Le message est trop long. Merci de réduire la taille des champs.',
+    });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ ok: false, message: 'Adresse e-mail invalide.' });
   }
 
   const transport = createTransport();

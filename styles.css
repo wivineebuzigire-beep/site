@@ -628,6 +628,27 @@ blockquote {
   right: 0;
 }
 
+.novel-rights {
+  margin-top: 1.8rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(132, 89, 62, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 252, 242, 0.86);
+}
+
+.novel-signature {
+  margin: 0 0 0.35rem;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.05rem;
+  color: #463225;
+}
+
+.novel-rights p {
+  margin: 0;
+  line-height: 1.62;
+  color: #3f2c1f;
+}
+
 @media (max-width: 900px) {
   .novel-paper {
     padding: 1rem 0.85rem;

@@ -531,6 +531,114 @@ blockquote {
   gap: 0.7rem;
 }
 
+.roman-status {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.roman-content {
+  margin-top: 1rem;
+}
+
+.roman-content p {
+  line-height: 1.8;
+  margin: 0 0 0.95rem;
+}
+
+.novel-page .page-bg {
+  background:
+    radial-gradient(circle at 14% 20%, rgba(235, 198, 130, 0.26) 0 18%, transparent 46%),
+    radial-gradient(circle at 84% 17%, rgba(85, 109, 78, 0.16) 0 19%, transparent 40%),
+    radial-gradient(circle at 78% 84%, rgba(132, 89, 62, 0.15) 0 17%, transparent 39%);
+}
+
+.novel-main {
+  width: min(1020px, calc(100% - 2.4rem));
+}
+
+.novel-shell {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.novel-paper {
+  margin-top: 1.2rem;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 244, 0.98), rgba(250, 245, 231, 0.96)),
+    repeating-linear-gradient(0deg, rgba(132, 89, 62, 0.03) 0 1px, transparent 1px 29px);
+  border: 1px solid rgba(132, 89, 62, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 24px 42px rgba(69, 52, 39, 0.18);
+  padding: clamp(1.25rem, 3vw, 2.6rem);
+}
+
+.novel-content,
+.roman-content {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  color: #2a1d13;
+}
+
+.novel-paragraph {
+  font-size: clamp(1.23rem, 2.7vw, 1.42rem);
+  line-height: 1.82;
+  letter-spacing: 0.01em;
+  margin: 0 0 1.05rem;
+  text-align: justify;
+}
+
+.novel-paragraph.has-dropcap::first-letter {
+  float: left;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 3.7rem;
+  line-height: 0.82;
+  padding-right: 0.45rem;
+  padding-top: 0.3rem;
+  color: #84593e;
+}
+
+.novel-chapter {
+  margin: 2.6rem 0 1.25rem;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.55rem, 3.2vw, 2rem);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #463225;
+  position: relative;
+}
+
+.novel-chapter::before,
+.novel-chapter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(132, 89, 62, 0.7), transparent);
+}
+
+.novel-chapter::before {
+  left: 0;
+}
+
+.novel-chapter::after {
+  right: 0;
+}
+
+@media (max-width: 900px) {
+  .novel-paper {
+    padding: 1rem 0.85rem;
+  }
+
+  .novel-chapter::before,
+  .novel-chapter::after {
+    width: 16%;
+  }
+}
+
 .latest-articles-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

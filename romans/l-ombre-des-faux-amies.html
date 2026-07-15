@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'ombre des faux amies | Ganti Busime</title>
+  <meta name="description" content="Lecture en ligne du roman L'ombre des faux amies." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body class="novel-page">
+  <div class="page-bg" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html">Ganti Busime</a>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <a class="site-nav__link" href="../index.html">Accueil</a>
+      <a class="site-nav__link" href="../articles.html">Articles</a>
+      <a class="site-nav__link active" href="../romans.html">Romans</a>
+      <a class="site-nav__link" href="../contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main class="article-main novel-main">
+    <article class="article-shell novel-shell">
+      <p class="label">Roman</p>
+      <h1>L'ombre des faux amies</h1>
+      <p class="article-lead">Ce roman est affiché directement depuis le fichier original du dossier romans.</p>
+      <div class="article-nav">
+        <a class="cta cta--alt" href="../romans.html">Retour aux romans</a>
+        <a class="cta" href="l%27ombre%20des%20faux%20amies.docx" download>Télécharger le fichier</a>
+      </div>
+      <section class="novel-paper" aria-label="Texte du roman">
+        <div id="roman-status" class="roman-status">Chargement du roman...</div>
+        <div id="roman-content" class="roman-content"></div>
+        <aside class="novel-rights" aria-label="Droits d'auteur">
+          <p class="novel-signature">Roman signé: Ganti Busime</p>
+          <p>
+            Ce roman est une oeuvre originale de Ganti Busime. Toute copie, reproduction,
+            diffusion ou utilisation a des fins commerciales est strictement interdite sans
+            l'autorisation ecrite de l'auteur.
+          </p>
+        </aside>
+      </section>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <p>L'ombre des faux amies - Lecture en ligne</p>
+  </footer>
+
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <script>
+    function formatRomanContent(content) {
+      const blocks = Array.from(content.querySelectorAll('p'));
+      let dropcapAssigned = false;
+
+      for (const paragraph of blocks) {
+        const text = (paragraph.textContent || '').trim();
+
+        if (!text) {
+          paragraph.remove();
+          continue;
+        }
+
+        if (/^chapitre\s+\d+/i.test(text)) {
+          const chapter = document.createElement('h2');
+          chapter.className = 'novel-chapter';
+          chapter.textContent = text;
+          paragraph.replaceWith(chapter);
+          continue;
+        }
+
+        paragraph.classList.add('novel-paragraph');
+        if (!dropcapAssigned && text.length > 120) {
+          paragraph.classList.add('has-dropcap');
+          dropcapAssigned = true;
+        }
+      }
+    }
+
+    async function loadRoman() {
+      const status = document.getElementById('roman-status');
+      const content = document.getElementById('roman-content');
+
+      try {
+        const response = await fetch('l%27ombre%20des%20faux%20amies.docx');
+        if (!response.ok) {
+          throw new Error('Impossible de charger le fichier du roman.');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+
+        status.textContent = '';
+        content.innerHTML = result.value;
+        formatRomanContent(content);
+
+        if (!result.value || !result.value.trim()) {
+          status.textContent = 'Le roman est vide ou n\'a pas pu être interprété correctement.';
+        }
+      } catch (error) {
+        status.textContent = 'Le roman n\'a pas pu être affiché automatiquement. Utilisez le bouton de téléchargement.';
+      }
+    }
+
+    loadRoman();
+  </script>
+</body>
+</html>

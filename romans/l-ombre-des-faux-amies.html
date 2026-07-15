@@ -34,7 +34,7 @@
         <a class="cta" href="l%27ombre%20des%20faux%20amies.docx" download>Télécharger le fichier</a>
       </div>
       <section class="novel-paper" aria-label="Texte du roman">
-        <div id="roman-status" class="roman-status">Chargement du roman...</div>
+        <div id="roman-status" class="roman-status">Chargement des chapitres...</div>
         <div id="roman-content" class="roman-content"></div>
         <aside class="novel-rights" aria-label="Droits d'auteur">
           <p class="novel-signature">Roman signé: Ganti Busime</p>
@@ -52,62 +52,61 @@
     <p>L'ombre des faux amies - Lecture en ligne</p>
   </footer>
 
-  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
   <script>
-    function formatRomanContent(content) {
-      const blocks = Array.from(content.querySelectorAll('p'));
-      let dropcapAssigned = false;
-
-      for (const paragraph of blocks) {
-        const text = (paragraph.textContent || '').trim();
-
-        if (!text) {
-          paragraph.remove();
-          continue;
-        }
-
-        if (/^chapitre\s+\d+/i.test(text)) {
-          const chapter = document.createElement('h2');
-          chapter.className = 'novel-chapter';
-          chapter.textContent = text;
-          paragraph.replaceWith(chapter);
-          continue;
-        }
-
-        paragraph.classList.add('novel-paragraph');
-        if (!dropcapAssigned && text.length > 120) {
-          paragraph.classList.add('has-dropcap');
-          dropcapAssigned = true;
-        }
-      }
-    }
-
-    async function loadRoman() {
+    async function loadRomanFromChapters() {
       const status = document.getElementById('roman-status');
       const content = document.getElementById('roman-content');
+      let dropcapAssigned = false;
 
       try {
-        const response = await fetch('l%27ombre%20des%20faux%20amies.docx');
-        if (!response.ok) {
-          throw new Error('Impossible de charger le fichier du roman.');
-        }
+        const chapterNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
 
-        const arrayBuffer = await response.arrayBuffer();
-        const result = await mammoth.convertToHtml({ arrayBuffer });
+        for (const number of chapterNumbers) {
+          const padded = String(number).padStart(2, '0');
+          const response = await fetch(`../articles/chapitre-${padded}.html`);
+
+          if (!response.ok) {
+            throw new Error('Impossible de charger un des chapitres du roman.');
+          }
+
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          const title = (doc.querySelector('article h1')?.textContent || `Chapitre ${number}`).trim();
+          const chapterTitle = document.createElement('h2');
+          chapterTitle.className = 'novel-chapter';
+          chapterTitle.textContent = `Chapitre ${number} - ${title}`;
+          content.appendChild(chapterTitle);
+
+          const paragraphs = Array.from(doc.querySelectorAll('.article-content p'));
+
+          for (const paragraph of paragraphs) {
+            const text = (paragraph.textContent || '').trim();
+            if (!text) {
+              continue;
+            }
+
+            const p = document.createElement('p');
+            p.className = 'novel-paragraph';
+            p.textContent = text;
+
+            if (!dropcapAssigned && text.length > 120) {
+              p.classList.add('has-dropcap');
+              dropcapAssigned = true;
+            }
+
+            content.appendChild(p);
+          }
+        }
 
         status.textContent = '';
-        content.innerHTML = result.value;
-        formatRomanContent(content);
-
-        if (!result.value || !result.value.trim()) {
-          status.textContent = 'Le roman est vide ou n\'a pas pu être interprété correctement.';
-        }
       } catch (error) {
-        status.textContent = 'Le roman n\'a pas pu être affiché automatiquement. Utilisez le bouton de téléchargement.';
+        status.textContent = 'Le texte du roman n\'a pas pu être chargé automatiquement. Utilisez le bouton "Télécharger le fichier".';
       }
     }
 
-    loadRoman();
+    loadRomanFromChapters();
   </script>
 </body>
 </html>

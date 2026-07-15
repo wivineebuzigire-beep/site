@@ -28,7 +28,6 @@
     <article class="article-shell novel-shell">
       <p class="label">Roman</p>
       <h1>L'ombre des faux amies</h1>
-      <p class="article-lead">Ce roman est affiché directement depuis le fichier original du dossier romans.</p>
       <div class="article-nav">
         <a class="cta cta--alt" href="../romans.html">Retour aux romans</a>
         <a class="cta" href="l%27ombre%20des%20faux%20amies.docx" download>Télécharger le fichier</a>
@@ -52,6 +51,7 @@
     <p>L'ombre des faux amies - Lecture en ligne</p>
   </footer>
 
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
   <script>
     function fixMojibake(text) {
       const map = {
@@ -130,7 +130,25 @@
           status.textContent = 'Le roman est vide ou n\'a pas pu être interprété correctement.';
         }
       } catch (error) {
-        status.textContent = 'Le roman n\'a pas pu être affiché automatiquement. Utilisez le bouton de téléchargement.';
+        try {
+          const response = await fetch('l%27ombre%20des%20faux%20amies.docx');
+          if (!response.ok) {
+            throw new Error('Impossible de charger le fichier du roman.');
+          }
+
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+
+          status.textContent = '';
+          content.innerHTML = result.value;
+          formatRomanContent(content);
+
+          if (!result.value || !result.value.trim()) {
+            status.textContent = 'Le roman est vide ou n\'a pas pu être interprété correctement.';
+          }
+        } catch (fallbackError) {
+          status.textContent = 'Le roman n\'a pas pu être affiché automatiquement. Utilisez le bouton de téléchargement.';
+        }
       }
     }
 

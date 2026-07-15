@@ -34,7 +34,7 @@
         <a class="cta" href="l%27ombre%20des%20faux%20amies.docx" download>Télécharger le fichier</a>
       </div>
       <section class="novel-paper" aria-label="Texte du roman">
-        <div id="roman-status" class="roman-status">Chargement des chapitres...</div>
+        <div id="roman-status" class="roman-status">Chargement du roman...</div>
         <div id="roman-content" class="roman-content"></div>
         <aside class="novel-rights" aria-label="Droits d'auteur">
           <p class="novel-signature">Roman signé: Ganti Busime</p>
@@ -53,60 +53,88 @@
   </footer>
 
   <script>
-    async function loadRomanFromChapters() {
-      const status = document.getElementById('roman-status');
-      const content = document.getElementById('roman-content');
+    function fixMojibake(text) {
+      const map = {
+        'Ã©': 'é', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã«': 'ë',
+        'Ã ': 'à', 'Ã¢': 'â', 'Ã®': 'î', 'Ã¯': 'ï',
+        'Ã´': 'ô', 'Ã»': 'û', 'Ã¹': 'ù', 'Ã§': 'ç',
+        'Ã‰': 'É', 'Ãˆ': 'È', 'ÃŠ': 'Ê', 'Ã‹': 'Ë',
+        'Ã€': 'À', 'Ã‚': 'Â', 'ÃŽ': 'Î', 'Ã�': 'Ï',
+        'Ã”': 'Ô', 'Ã›': 'Û', 'Ã™': 'Ù', 'Ã‡': 'Ç',
+        'Å“': 'œ', 'Å’': 'Œ', 'â€™': '’', 'â€“': '-',
+        'â€”': '-', 'â€¦': '...', 'Â': ''
+      };
+
+      let fixed = text;
+      for (const [wrong, right] of Object.entries(map)) {
+        fixed = fixed.split(wrong).join(right);
+      }
+      return fixed;
+    }
+
+    function formatRomanContent(content) {
+      const blocks = Array.from(content.querySelectorAll('p'));
       let dropcapAssigned = false;
 
-      try {
-        const chapterNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
+      for (const paragraph of blocks) {
+        const text = (paragraph.textContent || '').trim();
 
-        for (const number of chapterNumbers) {
-          const padded = String(number).padStart(2, '0');
-          const response = await fetch(`../articles/chapitre-${padded}.html`);
-
-          if (!response.ok) {
-            throw new Error('Impossible de charger un des chapitres du roman.');
-          }
-
-          const html = await response.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-
-          const title = (doc.querySelector('article h1')?.textContent || `Chapitre ${number}`).trim();
-          const chapterTitle = document.createElement('h2');
-          chapterTitle.className = 'novel-chapter';
-          chapterTitle.textContent = `Chapitre ${number} - ${title}`;
-          content.appendChild(chapterTitle);
-
-          const paragraphs = Array.from(doc.querySelectorAll('.article-content p'));
-
-          for (const paragraph of paragraphs) {
-            const text = (paragraph.textContent || '').trim();
-            if (!text) {
-              continue;
-            }
-
-            const p = document.createElement('p');
-            p.className = 'novel-paragraph';
-            p.textContent = text;
-
-            if (!dropcapAssigned && text.length > 120) {
-              p.classList.add('has-dropcap');
-              dropcapAssigned = true;
-            }
-
-            content.appendChild(p);
-          }
+        if (!text) {
+          paragraph.remove();
+          continue;
         }
 
-        status.textContent = '';
-      } catch (error) {
-        status.textContent = 'Le texte du roman n\'a pas pu être chargé automatiquement. Utilisez le bouton "Télécharger le fichier".';
+        if (/^chapitre\s+\d+/i.test(text) || /^deuxième partie$/i.test(text)) {
+          const chapter = document.createElement('h2');
+          chapter.className = 'novel-chapter';
+          chapter.textContent = text;
+          paragraph.replaceWith(chapter);
+          continue;
+        }
+
+        paragraph.classList.add('novel-paragraph');
+        if (!dropcapAssigned && text.length > 120) {
+          paragraph.classList.add('has-dropcap');
+          dropcapAssigned = true;
+        }
       }
     }
 
-    loadRomanFromChapters();
+    async function loadRoman() {
+      const status = document.getElementById('roman-status');
+      const content = document.getElementById('roman-content');
+
+      try {
+        const response = await fetch('ombre-extract.txt');
+        if (!response.ok) {
+          throw new Error('Impossible de charger le fichier du roman.');
+        }
+
+        const rawText = await response.text();
+        const text = fixMojibake(rawText);
+        const lines = text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0);
+
+        const paragraphs = lines
+          .filter((line) => !/^l'ombre des faux amis$/i.test(line))
+          .map((line) => `<p>${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`)
+          .join('');
+
+        status.textContent = '';
+        content.innerHTML = paragraphs;
+        formatRomanContent(content);
+
+        if (!paragraphs.trim()) {
+          status.textContent = 'Le roman est vide ou n\'a pas pu être interprété correctement.';
+        }
+      } catch (error) {
+        status.textContent = 'Le roman n\'a pas pu être affiché automatiquement. Utilisez le bouton de téléchargement.';
+      }
+    }
+
+    loadRoman();
   </script>
 </body>
 </html>
